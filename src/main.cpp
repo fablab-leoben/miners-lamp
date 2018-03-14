@@ -114,6 +114,7 @@ bool Candle::fire(uint8_t greenDropValue, uint32_t cycleTime)
 #define PIXEL_TYPE NEO_RGBW + NEO_KHZ800 //NEO_GRBW + NEO_KHZ800 
 
 #define candleOffTime 10000
+#define threshold 1.0
 
 Candle candle = Candle(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE, EVERY_PIXEL);
 
@@ -136,7 +137,7 @@ void setup(void)
 {
   Serial.begin(115200);
 
- /* Initialise the sensor */
+  /* Initialise the sensor */
   if(!accel.begin())
   {
     /* There was a problem detecting the ADXL345 ... check your connections */
@@ -174,14 +175,17 @@ void loop(void)
     lastFlashMillis = millis();
   }
 
-  if(Z.getAverage() > 1.0)
+  if(Z.getAverage() > threshold)
   {
     blowOffCandle();
     X.clear(); // explicitly start clean
     Y.clear(); // explicitly start clean
     Z.clear(); // explicitly start clean
     delay(candleOffTime);
-  }
+  }else
+    {
+      //do nothing
+    }
 }
 
 void checkMovement(void)
