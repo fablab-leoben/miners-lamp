@@ -113,8 +113,10 @@ bool Candle::fire(uint8_t greenDropValue, uint32_t cycleTime)
 #define PIXEL_PIN 1
 #define PIXEL_TYPE NEO_RGBW + NEO_KHZ800 //NEO_GRBW + NEO_KHZ800 
 
-#define candleOffTime 10000
 #define threshold 1.0
+#define candleOffTime 10000
+uint32_t offTimeMillis = 0;
+bool candleBurning = true;
 
 Candle candle = Candle(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE, EVERY_PIXEL);
 
@@ -166,7 +168,10 @@ void setup(void)
 
 void loop(void)
 {
-  candle.update();
+  if(candleBurning == true)
+  {
+    candle.update();
+  } 
 
   static uint32_t lastFlashMillis = 0;
   if(millis() - lastFlashMillis > 50)
@@ -177,15 +182,20 @@ void loop(void)
 
   if(Z.getAverage() > threshold)
   {
+    candleBurning = false;
     blowOffCandle();
-    X.clear(); // explicitly start clean
-    Y.clear(); // explicitly start clean
-    Z.clear(); // explicitly start clean
-    delay(candleOffTime);
-  }else
+    X.clear(); // explicitly continue clean
+    Y.clear(); // explicitly continue clean
+    Z.clear(); // explicitly continue clean
+    offTimeMillis = millis();
+  } else if(candleBurning == false && millis() - offTimeMillis > candleOffTime)
     {
-      //do nothing
-    }
+      candleBurning = true;
+      offTimeMillis = 0;
+    } else
+      {
+        //do nothing
+      }
 }
 
 void checkMovement(void)
